@@ -39,15 +39,16 @@ def api():
 @app.route('/generaciones', methods=['GET'])
 def listar_generaciones():
     try:
-        cursor = conexion.connection.cursor()
-        sql = "SELECT * from generaciones"
-        cursor.execute(sql)
-        datos = cursor.fetchall()
-        generaciones = []
-        for f in datos:
-            generacion = {'id':f[0], 'imagen1': f[1], 'imagen2': f[2], 'imagen3': f[3], 'texto1': f[4], 'texto2': f[5], 'texto3': f[6], 'id_user': f[7]}
-            generaciones.append(generacion)
-        return jsonify({'generaciones': generaciones, 'mensaje': "Generaciones listadas."})
+        # cursor = conexion.connection.cursor()
+        # sql = "SELECT * from generaciones"
+        # cursor.execute(sql)
+        # datos = cursor.fetchall()
+        # generaciones = []
+        # for f in datos:
+        #     generacion = {'id':f[0], 'imagen1': f[1], 'imagen2': f[2], 'imagen3': f[3], 'texto1': f[4], 'texto2': f[5], 'texto3': f[6], 'id_user': f[7]}
+        #     generaciones.append(generacion)
+        # return jsonify({'generaciones': generaciones, 'mensaje': "Generaciones listadas."})
+        return jsonify({'generaciones': [], 'mensaje': "Generaciones listadas."})
     except Exception as ex:
         return jsonify({'mensaje': "Error"})
 
