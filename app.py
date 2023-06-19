@@ -39,7 +39,7 @@ def api():
 @app.route('/generaciones', methods=['GET'])
 def listar_generaciones():
     try:
-        # cursor = conexion.connection.cursor()
+        cursor = conexion.connection.cursor()
         # sql = "SELECT * from generaciones"
         # cursor.execute(sql)
         # datos = cursor.fetchall()
