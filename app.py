@@ -50,7 +50,7 @@ def listar_generaciones():
         return jsonify({'generaciones': generaciones, 'mensaje': "Generaciones listadas."})
         # return jsonify({'generaciones': [], 'mensaje': "Generaciones listadas."})
     except Exception as ex:
-        return jsonify({'mensaje': 'Error'})
+        return jsonify({'mensaje': 'Error', 'error': str(ex)})
 
 
 @app.route('/generaciones/<id>', methods=['GET'])
