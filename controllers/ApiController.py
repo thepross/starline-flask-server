@@ -24,27 +24,35 @@ def generar2(texto1, texto2):
             return jsonify({'mensaje': "Error"})
 
 def generar():
+    print(request.form)
     if request.method == 'POST':
-        texto1 = request.form['texto1']
-        texto2 = request.form['texto2']
-        if request.files:
-            imagen1 = request.files['imagen1']
-            filename = secure_filename(imagen1.filename)
-            print(imagen1.filename)
-            img_path = os.path.join('images/', secure_filename(imagen1.filename))
-            imagen1.save(img_path)
-        else:
-            return jsonify({'message' : 'No se ha subido un archivo.'})
+        id_generacion = request.form['id_generacion']
         try:
+            cursor = conexion.connection.cursor()
+            sql = "SELECT * from generaciones WHERE id = '{0}'".format(id_generacion)
+            cursor.execute(sql)
+            generacion = cursor.fetchone()
+            imagen1 = Image.open(generacion[1])
+            imagen1_path = generacion[1]
+            texto1 = generacion[4]
+            texto2 = generacion[5]
+            texto3 = generacion[6]
+
             print(texto1, texto2)
             generaciones = []
-            for i in range(1, 4):
-                imagen = generate(texto1, texto2, imagen1, img_path)
+            for i in range(1, 2):
+                nombre_archivo, imagen = generate(texto1, texto2, imagen1, imagen1_path)
+
+                cursor = conexion.connection.cursor()
+                sql = """INSERT INTO imagenes (ruta, nombre, size, id_generacion)
+                VALUES ('{0}', '{1}', '{2}', '{3}')""".format(nombre_archivo, "poster", "982673", id_generacion)
+                cursor.execute(sql)
+                conexion.connection.commit()
                 generaciones.append(imagen)
 
-            return jsonify({'generaciones': generaciones, 'mensaje': "Generaciones listadas."})
+            return jsonify({'generaciones': generaciones, 'mensaje': "Imagen Creada."})
         except Exception as ex:
-            return jsonify({'mensaje': "Error"})
+            return jsonify({'mensaje': ex})
 
 
 
@@ -331,4 +339,5 @@ def generate(texto1, texto2, imagen1, logo_path):
         image.save(byte_arr, format='PNG')
         encoded_img = encodebytes(byte_arr.getvalue()).decode('ascii')
         gen.append(encoded_img)
-    return gen[0]
+
+    return filename, gen[0]

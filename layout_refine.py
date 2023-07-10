@@ -1,11 +1,4 @@
-# -*- encoding: utf-8 -*-
-'''
-@File    :   layout_refine.py
-@Time    :   2023/06/05 23:05:59
-@Author  :   thepross
-@Email   :   borisf.bpd@gmail.com
-'''
-# here put the import lib
+
 import torch
 import cv2
 import os
@@ -20,13 +13,12 @@ MIN_VALUE = -999999
 MAX_BBOX_NUM = 32
 
 layout_model = BBoxesRegModel(channel_deep = channel_deep)
-ckpt_path = "./checkpoint/Cascading_128_uniform_big.pth"
+ckpt_path = "./checkpoint/uniform_big.pth"
 layout_model.load_state_dict(torch.load(ckpt_path, map_location=torch.device('cpu')).module.state_dict())
 #layout_model.cuda()
 layout_model.eval()
 
-
-# Given the bounding box of a layout, return the layout binary mask.
+# Obtiene el borde box de los layouts, retorna una mascara.
 def get_bbox_mask(bbox, data_len):
     mask = np.zeros((1, STD_HEIGHT, STD_WIDTH), dtype = np.uint8)
     regions = np.array([[[obj[0], obj[1]], 
@@ -58,18 +50,7 @@ def get_batch_text_region(distrib_mask, bbox_size_list, img_size):
     return bbox_pos
 
 
-# used to deoverlap.
 def overlap_detection(bboxes, box_id = -1):
-    """ We resize both tensors to [A,B,2] without new malloc:
-    [A,2] -> [A,1,2] -> [A,B,2]
-    [B,2] -> [1,B,2] -> [A,B,2]
-    Then we compute the area of intersect between box_a and box_b.
-    Args:
-      box_a: (tensor) bounding boxes, Shape: [A,4].
-      box_b: (tensor) bounding boxes, Shape: [B,4].
-    Return:
-      (tensor) intersection area, Shape: [A,B].
-    """
     A = bboxes.size(0)
     B = bboxes.size(0)
     max_xy = torch.min(bboxes[:, 2:].unsqueeze(1).expand(A, B, 2),
@@ -92,10 +73,8 @@ def overlap_detection(bboxes, box_id = -1):
     else:
         return False, -1
 
-
-# Given the current layout, predict the refine layout.
+# Obtiene el layout actual, predice el layout ya refinado.
 def get_next_bbox(cur_bbox, shift, data_len, x_step, y_step, bbox_size, order):
-
     move_pixel = 10
 #     shift[np.abs(shift)<0.1] = 0
     if np.abs(shift).sum() == 0:
@@ -140,7 +119,7 @@ def get_next_bbox(cur_bbox, shift, data_len, x_step, y_step, bbox_size, order):
     return next_bbox, bbox_size, order
 
 
-# refine the layout iteratively.
+# refina el layout.
 def get_refine_bboxes(initial_data, iteration_rounds = 10):
     len_info, bbox_mask, shifted_bbox = initial_data["len_info"], initial_data["shifted_mask"], initial_data["shifted_bbox"]
     bbox_distrib_map, smooth_region_mask = initial_data["bbox_distrib_map"], initial_data["smooth_region_mask"]

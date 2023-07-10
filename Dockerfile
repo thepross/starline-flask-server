@@ -1,12 +1,25 @@
-FROM python:3-alpine
+# syntax=docker/dockerfile:1
 
-WORKDIR /app
-COPY requirements.txt ./
+FROM python:3.8-slim-buster
 
-RUN pip install -r requirements.txt
+WORKDIR /python-docker
 
-# Bundle app source
+COPY requirements.txt requirements.txt
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends default-libmysqlclient-dev gcc libgl1 \
+ libgl1-mesa-glx \ 
+ libglib2.0-0 \
+ libsm6 \
+ libxrender1 \
+ libxext6
+ 
+RUN pip3 install -r requirements.txt
+
 COPY . .
 
-EXPOSE 5000
-CMD ["python", "m.py"]
+#CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+
+# configure the container to run in an executed manner
+ENTRYPOINT ["python"]
+
+CMD ["app.py"]

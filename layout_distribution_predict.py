@@ -20,7 +20,7 @@ distrib_model = LayoutsDistribModel(
     channel_deep = channel_deep, 
     position_deep = position_deep)
 
-ckpt_path = "./checkpoint/distribCNN_BigPosition_epoch_76_scale_20.pth"
+ckpt_path = "./checkpoint/distribucionCNN.pth"
 distrib_model.load_state_dict(torch.load(ckpt_path, map_location=torch.device('cpu')).module.state_dict())
 distrib_model = distrib_model.cpu()
 #distrib_model = distrib_model.cuda()

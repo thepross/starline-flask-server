@@ -1,6 +1,7 @@
-import sys
+import sys, os
 from flask import request, jsonify
 from app import conexion
+from werkzeug.utils import secure_filename
 
 def index():
     try:
@@ -21,13 +22,26 @@ def index():
 
 def store():
     try:
-        #print(request.json)
+        id_user = request.form['id_user']
+        texto1 = request.form['texto1']
+        texto2 = request.form['texto2']
+        texto3 = request.form['texto3']
+        image1 = ""
+        image2 = ""
+        image3 = ""
+        if request.files:
+            imagen1 = request.files['imagen1']
+            img1_path = os.path.join('images/', secure_filename(imagen1.filename))
+            print(img1_path)
+            imagen1.save(img1_path)
+        else:
+            return jsonify({'message' : 'No se ha subido un archivo.'})
         cursor = conexion.connection.cursor()
-        sql = """INSERT INTO generaciones (id, imagen1, imagen2, imagen3, texto1, texto2, texto3, id_user) 
-        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')""".format(request.json['id'], request.json['imagen1'], request.json['imagen2'], request.json['imagen3'], request.json['texto1'], request.json['texto2'], request.json['texto3'], request.json['id_user'])
+        sql = """INSERT INTO generaciones (imagen1, imagen2, imagen3, texto1, texto2, texto3, id_user) 
+        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', {6})""".format(img1_path, image2, image3, texto1, texto2, texto3, id_user)
         cursor.execute(sql)
-        conexion.connection.commit() #confirmacion
-        return jsonify({'mensaje': "Generacion registrado."})
+        conexion.connection.commit()
+        return jsonify({'id': cursor.lastrowid, 'mensaje': "Generacion registrado."})
     except Exception as ex:
         return jsonify({'mensaje': "Error"})
 
