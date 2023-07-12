@@ -15,7 +15,10 @@ def index():
         for f in datos:
             generacion = {'id':f[0], 'imagen1': f[1], 'imagen2': f[2], 'imagen3': f[3], 'texto1': f[4], 'texto2': f[5], 'texto3': f[6], 'id_user': f[7]}
             generaciones.append(generacion)
-        return jsonify({'generaciones': generaciones, 'mensaje': "Generaciones listadas."})
+        response = jsonify({'generaciones': generaciones, 'mensaje': "Generaciones listadas."})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
+        
         # return jsonify({'generaciones': [], 'mensaje': "Generaciones listadas."})
     except Exception as ex:
         return jsonify({'mensaje': 'Error', 'error': str(ex)})
