@@ -2,10 +2,10 @@
 import requests
 import os, random
 
-def bk_img_retrieval(text, local_image_folder = "./bk_image_folder"):
-
-    bk_rnd = random.choice(os.listdir(local_image_folder))
-    image_path_list = [local_image_folder + "/" + bk_rnd]
+def bk_img_retrieval(text, local_image_folder = "./bk_image_folder", estilo = 1):
+    bk_path = local_image_folder + "/" + str(estilo)
+    bk_rnd = random.choice(os.listdir(bk_path))
+    image_path_list = [bk_path + "/" + bk_rnd]
     print(image_path_list)
     return image_path_list
 

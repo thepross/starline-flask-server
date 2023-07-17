@@ -27,6 +27,7 @@ def generar():
     print(request.form)
     if request.method == 'POST':
         id_generacion = request.form['id_generacion']
+        estilo = request.form['estilo']
         try:
             cursor = conexion.connection.cursor()
             sql = "SELECT * from generaciones WHERE id = '{0}'".format(id_generacion)
@@ -41,7 +42,7 @@ def generar():
             print(texto1, texto2)
             generaciones = []
             for i in range(1, 2):
-                nombre_archivo, imagen = generate(texto1, texto2, imagen1, imagen1_path)
+                nombre_archivo, imagen = generate(texto1, texto2, imagen1, imagen1_path, estilo)
 
                 cursor = conexion.connection.cursor()
                 sql = """INSERT INTO imagenes (ruta, nombre, size, id_generacion)
@@ -208,7 +209,7 @@ def set_logo(imagen1, img_path, img, width, height, h, w):
     return img
 
 
-def generate(texto1, texto2, imagen1, logo_path):
+def generate(texto1, texto2, imagen1, logo_path, estilo):
 
     STD_WIDTH, STD_HEIGHT = 300, 400
     MIN_VALUE = -999999
@@ -256,7 +257,7 @@ def generate(texto1, texto2, imagen1, logo_path):
     print("Background retrieval query:", background_query)
 
     # imagenes de fondo obtenidas de bk_img_retrieval
-    image_path_list = bk_img_retrieval(background_query, args.background_folder)
+    image_path_list = bk_img_retrieval(background_query, args.background_folder, estilo)
 
     for i, img_path in enumerate(tqdm(image_path_list[:args.top_n])):
         print("background image: ", img_path)

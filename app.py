@@ -65,6 +65,42 @@ def login():
     except Exception as ex:
         return jsonify({'status': 'Error', 'message': "Error"})
 
+@app.route('/register', methods=['POST'])
+def register():
+    try:
+        print(request.json)
+        cursor = conexion.connection.cursor()
+        username = request.json['user']
+        email = request.json['email']
+        password = request.json['password']
+        sql = """SELECT * FROM users WHERE username = '{0}'""".format(username)
+        cursor.execute(sql)
+        dato = cursor.fetchone()
+        if dato == None:
+            # existe el usuario, verificar contraseña
+            sql = """SELECT * FROM users WHERE email = '{0}'""".format(email)
+            cursor.execute(sql)
+            dato = cursor.fetchone()
+            if dato == None:
+                # correcto
+
+                cursor = conexion.connection.cursor()
+                sql = """INSERT INTO users (username, password, email)
+                VALUES ('{0}', '{1}', '{2}')""".format(username, password, email)
+                cursor.execute(sql)
+                conexion.connection.commit()
+
+                token = uuid.uuid4()
+                user = {'id': cursor.lastrowid, 'username': username}
+                return jsonify({'user': user, 'token': token, 'status': 'ok', 'message': 'Correcto.'})
+            else:
+                return jsonify({'status': 'Error', 'message': "Error contraseña incorrecta."})
+        else:
+            return jsonify({'status': 'Error', 'message': "Error, el usuario no existe."})
+        
+    except Exception as ex:
+        return jsonify({'status': 'Error', 'message': "Error"})
+
 
 
 def not_found(error):
