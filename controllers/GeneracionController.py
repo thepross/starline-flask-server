@@ -29,24 +29,28 @@ def store():
         texto1 = request.form['texto1']
         texto2 = request.form['texto2']
         texto3 = request.form['texto3']
-        image1 = ""
-        image2 = ""
-        image3 = ""
+
+        imgs_path = ["", "", ""]
         if request.files:
-            imagen1 = request.files['imagen1']
-            img1_path = os.path.join('images/', secure_filename(imagen1.filename))
-            print(img1_path)
-            imagen1.save(img1_path)
+            i = 0
+            for key in request.files.keys():
+                img = request.files[key]
+                print("Nombre de imagen", img.filename)
+                img_path = os.path.join('images/', secure_filename(img.filename))
+                print("Ruta de imagen", img_path)
+                img.save(img_path)
+                imgs_path[i] = img_path
+                i = i + 1
         else:
             return jsonify({'message' : 'No se ha subido un archivo.'})
         cursor = conexion.connection.cursor()
         sql = """INSERT INTO generaciones (imagen1, imagen2, imagen3, texto1, texto2, texto3, id_user) 
-        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', {6})""".format(img1_path, image2, image3, texto1, texto2, texto3, id_user)
+        VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', {6})""".format(imgs_path[0], imgs_path[1], imgs_path[2], texto1, texto2, texto3, id_user)
         cursor.execute(sql)
         conexion.connection.commit()
         return jsonify({'id': cursor.lastrowid, 'mensaje': "Generacion registrado."})
     except Exception as ex:
-        return jsonify({'mensaje': "Error"})
+        return jsonify({'mensaje': "Error", "Error": str(ex)})
 
 def show(id):
     try:

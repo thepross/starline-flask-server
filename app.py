@@ -26,7 +26,7 @@ from slugify import slugify
 from flask import Flask, jsonify, request
 from flask_mysqldb import MySQL
 from config import config
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 
 from base64 import encodebytes
@@ -34,13 +34,22 @@ from PIL import Image
 import random, io
 
 app = Flask(__name__)
-CORS(app)
+
+#cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 
 conexion = MySQL(app)
 
-
+@app.route('/ping', methods=['GET'])
+def ping():
+    print("ping pong")
+    response = jsonify({'status': 'estado', 'message': "ping"})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 @app.route('/login', methods=['POST'])
+@cross_origin()
 def login():
     try:
         print(request.json)
@@ -66,6 +75,7 @@ def login():
         return jsonify({'status': 'Error', 'message': "Error"})
 
 @app.route('/register', methods=['POST'])
+@cross_origin()
 def register():
     try:
         print(request.json)
@@ -83,7 +93,6 @@ def register():
             dato = cursor.fetchone()
             if dato == None:
                 # correcto
-
                 cursor = conexion.connection.cursor()
                 sql = """INSERT INTO users (username, password, email)
                 VALUES ('{0}', '{1}', '{2}')""".format(username, password, email)
@@ -94,12 +103,12 @@ def register():
                 user = {'id': cursor.lastrowid, 'username': username}
                 return jsonify({'user': user, 'token': token, 'status': 'ok', 'message': 'Correcto.'})
             else:
-                return jsonify({'status': 'Error', 'message': "Error contraseña incorrecta."})
+                return jsonify({'status': 'Error', 'message': "Error, correo ya existe."})
         else:
-            return jsonify({'status': 'Error', 'message': "Error, el usuario no existe."})
+            return jsonify({'status': 'Error', 'message': "Error, el usuario ya existe."})
         
     except Exception as ex:
-        return jsonify({'status': 'Error', 'message': "Error"})
+        return jsonify({'status': 'Error', 'message': str(ex)})
 
 
 
@@ -121,7 +130,8 @@ if __name__ == '__main__':
     app.config.from_object(config['development'])
     app.register_error_handler(404, not_found)
     
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    #port = int(os.environ.get('PORT', 5000))
+    #app.run(debug=True, host='0.0.0.0', port=port)
     
+    #app.run(ssl_context=('cert.pem', 'key.pem'))
     app.run()

@@ -24,17 +24,29 @@ def generar2(texto1, texto2):
             return jsonify({'mensaje': "Error"})
 
 def generar():
-    print(request.form)
     if request.method == 'POST':
         id_generacion = request.form['id_generacion']
         estilo = request.form['estilo']
+        print(request.form)
         try:
             cursor = conexion.connection.cursor()
             sql = "SELECT * from generaciones WHERE id = '{0}'".format(id_generacion)
             cursor.execute(sql)
             generacion = cursor.fetchone()
-            imagen1 = Image.open(generacion[1])
+            imagen1 = ""
+            imagen2 = ""
+            imagen3 = ""
+            if generacion[1] != "":
+                imagen1 = Image.open(generacion[1])
+            if generacion[2] != "":
+                imagen2 = Image.open(generacion[2])
+            if generacion[3] != "":
+                imagen3 = Image.open(generacion[3])
+            print(generacion)
+                
             imagen1_path = generacion[1]
+            imagen2_path = generacion[2]
+            imagen3_path = generacion[3]
             texto1 = generacion[4]
             texto2 = generacion[5]
             texto3 = generacion[6]
@@ -42,7 +54,7 @@ def generar():
             print(texto1, texto2)
             generaciones = []
             for i in range(1, 2):
-                nombre_archivo, imagen = generate(texto1, texto2, imagen1, imagen1_path, estilo)
+                nombre_archivo, imagen = generate(texto1, texto2, imagen1, imagen1_path, imagen2, imagen2_path, "", "", estilo)
 
                 cursor = conexion.connection.cursor()
                 sql = """INSERT INTO imagenes (ruta, nombre, size, id_generacion)
@@ -51,9 +63,9 @@ def generar():
                 conexion.connection.commit()
                 generaciones.append(imagen)
 
-            return jsonify({'generaciones': generaciones, 'mensaje': "Imagen Creada."})
+            return jsonify({'generaciones': generaciones, 'id': cursor.lastrowid, 'mensaje': "Imagen Creada."})
         except Exception as ex:
-            return jsonify({'mensaje': ex})
+            return jsonify({'mensaje': str(ex)})
 
 
 
@@ -167,14 +179,15 @@ def set_logo(imagen1, img_path, img, width, height, h, w):
     # interactuar entre imagenes iguales
     rnd = random.randint(1, 4)
     roi = img[0:filas, 0:columnas]
+    diff = 20
     if rnd == 1:
-        roi = img[10:filas + 10, 10:columnas + 10] # arriba izquierda
+        roi = img[diff:filas + diff, diff:columnas + diff] # arriba izquierda
     elif rnd == 2:
-        roi = img[w-filas - 10:w - 10, 10:columnas + 10] # abajo izquierda
+        roi = img[w-filas - diff:w - diff, diff:columnas + diff] # abajo izquierda
     elif rnd == 3:
-        roi = img[10:filas + 10, h-columnas - 10:h - 10] # arriba derecha
+        roi = img[diff:filas + diff, h-columnas - diff:h - diff] # arriba derecha
     else: 
-        roi = img[w - filas - 10:w - 10, h - columnas - 10:h - 10] # abajo derecha
+        roi = img[w - filas - diff:w - diff, h - columnas - diff:h - diff] # abajo derecha
 
     if (file_extension != '.png'):
         #binarizar el logo
@@ -209,7 +222,7 @@ def set_logo(imagen1, img_path, img, width, height, h, w):
     return img
 
 
-def generate(texto1, texto2, imagen1, logo_path, estilo):
+def generate(texto1, texto2, imagen1, logo_path, imagen2, imagen2_path, imagen3, imagen3_path, estilo):
 
     STD_WIDTH, STD_HEIGHT = 300, 400
     MIN_VALUE = -999999
@@ -265,7 +278,12 @@ def generate(texto1, texto2, imagen1, logo_path, estilo):
         width, height = img.shape[1], img.shape[0]
         h, w = img.shape[1], img.shape[0]
 
-        img = set_logo(imagen1, logo_path, img, width, height, h, w)
+        # imagen1
+        if imagen1 != "":
+            img = set_logo(imagen1, logo_path, img, width, height, h, w)
+        # imagen2
+        if imagen2 != "":
+            img = set_logo(imagen2, imagen2_path, img, width, height, h, w)
 
         img_size = (width, height)
         smooth_region_mask, regions, saliency_map = smooth_region_dectection(img)
